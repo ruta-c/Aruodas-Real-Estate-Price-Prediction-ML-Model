@@ -6,8 +6,11 @@ sql_query = "SELECT * FROM flats"
 flats_df = pd.read_sql_query(sql_query, engine)
 engine.dispose()
 
+print(flats_df.head())
+
 #Drop unnecessary columns
-flats_df = flats_df.drop(columns=["Namo numeris:", "Buto numeris:", "Unikalus daikto numeris (RC numeris):", "Aktyvus iki", "Papildoma įranga:"])
+columns_drop = ["Namo numeris:", "Buto numeris:", "Unikalus daikto numeris (RC numeris):", "Aktyvus iki", "Papildoma įranga:"]
+flats_df.drop(columns=columns_drop)
 
 #Rename columns
 columns_rename = {
@@ -35,31 +38,35 @@ columns_rename = {
 flats_df.rename(columns=columns_rename, inplace=True)
 
 #Correct data types of the columns
-flats_df["price"] = flats_df["price"].str.replace("€", "").replace(" ", "", regex=True).astype(int)
-flats_df["area"] = flats_df["area"].str.replace("m²", "").replace(" ", "", regex=True).str.replace(",", ".").astype(float)
-flats_df["rooms"] = flats_df["rooms"].astype(int)
-flats_df["floor"] = flats_df["floor"].astype(int)
-flats_df["floors"] = flats_df["floors"].astype(int)
+flats_df["price"] = flats_df["price"].str.replace("[^0-9]", "", regex=True).astype(int) # Without regex=True not working
+flats_df["area"] = flats_df["area"].str.replace(",", ".").replace("[^0-9.]", "", regex=True).astype(float)
 flats_df[["construction_year", "renovation_year"]] = flats_df["year"].str.split(",", expand=True)
 flats_df["construction_year"] = flats_df["construction_year"].str.replace("[^0-9]", "", regex=True).astype(int)
 flats_df["renovation_year"] = flats_df["renovation_year"].str.replace("[^0-9]", "", regex=True).fillna(flats_df["construction_year"]).astype(int)
-flats_df["looked_by"] = flats_df["looked_by"].str.extract(r'(\d+)(?=\/)')
-flats_df["looked_by"] = flats_df["looked_by"].fillna("0")
-flats_df["looked_by"] = flats_df["looked_by"].astype(int)
-flats_df["saved"] = flats_df["saved"].fillna("0")
-flats_df["saved"] = flats_df["saved"].astype(int)
+flats_df["looked_by"] = flats_df["looked_by"].str.extract(r"(\d+)(?=\/)").fillna("0").astype(int)
+def convert_to_int(df, columns):
+    for column in columns:
+        df[column] = df[column].fillna("0").astype(int)
+convert_to_int(flats_df, ["rooms", "floor", "floors", "saved"]) 
 
 #Handle categorical columns
+flats_df[["type", "mounting", "energy_class"]].describe()
+def unique_val(df, columns):
+    for column in columns:
+        value_counts = df[column].value_counts()
+        print(f"Column: {column}, Value Counts: \n{value_counts}\n")
+
+unique_val(flats_df, ["type", "mounting", "energy_class"])
+
+flats_df["type"] = flats_df["type"].str.replace("Rąstinis", "Medinis").replace("Karkasinis", "Kita").replace("Skydinis", "Kita")
 flats_df["mounting"] = flats_df["mounting"].str.replace(" NAUDINGA: Interjero dizaineriai", "")
 flats_df = pd.get_dummies(flats_df, columns=["type", "mounting", "energy_class"], prefix=["type", "mounting", "energy_class"], dummy_na=True)
 
 #Handle categorical columns
 
-flats_df["heating"] = flats_df["heating"].str.lower().str.split(',')
-unique_heating_methods = set()
-for methods in flats_df["heating"]:
-    unique_heating_methods.update(methods)
-unique_heating_methods = {method.strip() for method in unique_heating_methods}
+flats_df["heating"] = flats_df["heating"].str.lower().str.split(",")
+unique_heating_methods = sorted(set([method.strip() for methods in flats_df["heating"] for method in methods]))
+#ENDED HERE
 for method in unique_heating_methods:
     flats_df[method] = flats_df["heating"].apply(lambda x: 1 if method in x else 0)
 flats_df.drop(columns=["heating"], inplace=True)
