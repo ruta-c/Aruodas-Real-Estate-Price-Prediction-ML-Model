@@ -64,47 +64,26 @@ flats_df = pd.get_dummies(flats_df, columns=["type", "mounting", "energy_class"]
 
 #Handle categorical columns
 
-flats_df["heating"] = flats_df["heating"].str.lower().str.split(",")
-unique_heating_methods = sorted(set([method.strip() for methods in flats_df["heating"] for method in methods]))
-#ENDED HERE
-for method in unique_heating_methods:
-    flats_df[method] = flats_df["heating"].apply(lambda x: 1 if method in x else 0)
-flats_df.drop(columns=["heating"], inplace=True)
+flats_df["heating"] = flats_df["heating"].str.lower().str.strip().str.split(', ')
+unique_heating_methods = sorted(flats_df["heating"].explode().unique())
 
-flats_df["extra_rooms"] = flats_df["extra_rooms"].fillna("")
-unique_extra_rooms = set()
-for methods in flats_df["extra_rooms"]:
-    if methods:
-        unique_extra_rooms.update(methods.split(' '))
-unique_extra_rooms = {method.strip() for method in unique_extra_rooms}
-for method in unique_extra_rooms:
-    column_name = f"extra_room_{method}"
-    flats_df[column_name] = flats_df["extra_rooms"].apply(lambda x: 1 if method in x.split(' ') else 0)
-flats_df.drop(columns=["extra_rooms"], inplace=True)
+def get_dummies(df, column_name, unique_values):
+    for element in unique_values:
+        df[element] = 0
+        df.loc[df[column_name].apply(lambda x: element in x), element] = 1
+get_dummies(flats_df, "heating", unique_heating_methods)
 
-flats_df["security"] = flats_df["security"].str.replace("Šarvuotos durys", "Sarvuotos_durys").str.replace("Kodinė laiptinės spyna", "Kodine_spyna").str.replace("Vaizdo kameros", "Kameros").str.replace("Budintis sargas", "Sargas")
-flats_df["security"] = flats_df["security"].fillna("")
-unique_security = set()
-for methods in flats_df["security"]:
-    if methods:
-        unique_security.update(methods.split(' '))
-unique_security = {method.strip() for method in unique_security}
-for method in unique_security:
-    column_name = f"security_{method}"
-    flats_df[column_name] = flats_df["security"].apply(lambda x: 1 if method in x.split(' ') else 0)
-flats_df.drop(columns=["security"], inplace=True)
+flats_df["extra_rooms"] = flats_df["extra_rooms"].fillna("none").str.replace("Vieta automobiliui", "vieta_automobiliui").str.replace("Yra palėpė", "palepe").str.lower().str.strip().str.split(' ')
+unique_extra_rooms = sorted(flats_df["extra_rooms"].explode().unique())
+get_dummies(flats_df, "extra_rooms", unique_extra_rooms)
 
-flats_df["properties"] = flats_df["properties"].str.replace(r'(?<=[a-z\s])(?=[A-Z])', ',', regex=True)
-flats_df["properties"] = flats_df["properties"].fillna("")
-flats_df["properties"] = flats_df["properties"].str.split(',')
-unique_properties = set()
-for properties_list in flats_df["properties"]:
-    unique_properties.update(properties_list)
-unique_properties = {method.strip() for method in unique_properties}
-for method in unique_properties:
-    column_name = f"properties_{method}"
-    flats_df[column_name] = flats_df["properties"].apply(lambda x: 1 if method in x else 0)
-flats_df.drop(columns=["properties"], inplace=True)
+flats_df["security"] = flats_df["security"].fillna("none").str.replace("Šarvuotos durys", "Sarvuotos_durys").str.replace("Kodinė laiptinės spyna", "Kodine_spyna").str.replace("Vaizdo kameros", "Kameros").str.replace("Budintis sargas", "Sargas").str.lower().str.strip().str.split(' ')
+unique_security = sorted(flats_df["security"].explode().unique())
+get_dummies(flats_df, "security", unique_security)
+
+flats_df["properties"] = flats_df["properties"].str.replace(r'(?<=[a-z\s])(?=[A-Z])', ',', regex=True).fillna("none").str.lower().str.split(',').apply(lambda x: [item.strip() for item in x])
+unique_properties = sorted(flats_df["properties"].explode().unique())
+get_dummies(flats_df, "properties", unique_properties)
 
 print(flats_df.head(10))
 print(flats_df.dtypes)
