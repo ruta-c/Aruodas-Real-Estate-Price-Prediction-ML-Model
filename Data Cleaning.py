@@ -84,7 +84,7 @@ flats_df["security"] = flats_df["security"].fillna("none").str.replace("Šarvuot
 unique_security = sorted(flats_df["security"].explode().unique())
 get_dummies(flats_df, "security", unique_security)
 
-flats_df["properties"] = flats_df["properties"].str.replace(r'(?<=[a-z\s])(?=[A-Z])', ',', regex=True).fillna("none").str.lower().str.split(',').apply(lambda x: [item.strip() for item in x])
+flats_df["properties"] = flats_df["properties"].str.replace(r'(?<=[a-z\s])(?=[A-Z])', ',', regex=True).fillna("none").str.lower().str.replace(r"^varž.*", "aukcionas", regex=True).str.split(',').apply(lambda x: [item.strip() for item in x])
 unique_properties = sorted(flats_df["properties"].explode().unique())
 get_dummies(flats_df, "properties", unique_properties)
 
