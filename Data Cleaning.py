@@ -47,7 +47,10 @@ flats_df["looked_by"] = flats_df["looked_by"].str.extract(r"(\d+)(?=\/)").fillna
 def convert_to_int(df, columns):
     for column in columns:
         df[column] = df[column].fillna("0").astype(int)
-convert_to_int(flats_df, ["rooms", "floor", "floors", "saved"]) 
+convert_to_int(flats_df, ["rooms", "floor", "floors", "saved"])
+
+#Additional column 
+flats_df["price_sqm"] = flats_df["price"] / flats_df["area"] 
 
 #Handle categorical columns
 flats_df[["type", "mounting", "energy_class"]].describe()
