@@ -36,6 +36,7 @@ columns_rename = {
     "Papildomos patalpos:": "extra_rooms"
 }
 flats_df.rename(columns=columns_rename, inplace=True)
+flats_df.drop_duplicates()
 
 #Correct data types of the columns
 flats_df["price"] = flats_df["price"].str.replace("[^0-9]", "", regex=True).astype(int) # Without regex=True not working
