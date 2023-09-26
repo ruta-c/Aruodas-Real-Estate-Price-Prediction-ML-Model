@@ -92,8 +92,7 @@ unique_properties = sorted(flats_df["properties"].explode().unique())
 get_dummies(flats_df, "properties", unique_properties)
 
 # Remove extreme outliers
-flats_df = flats_df[(flats_df["price_sqm"] <= 9100) & (flats_df["price_sqm"] >= 525)].copy()
-flats_df = flats_df.dropna()
+flats_df = flats_df[(flats_df["price_sqm"] >= 525) & (flats_df["price_sqm"] <= 9100)].copy()
 
 # Normalizing using log
 flats_df["price_sqm_log"] = np.log(flats_df["price_sqm"])
