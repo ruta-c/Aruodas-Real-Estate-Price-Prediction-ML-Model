@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+from haversine import haversine
 from sqlalchemy import create_engine
 
 engine = create_engine("postgresql://postgres:odievai1@localhost:5432/aruodas")
@@ -88,6 +90,27 @@ get_dummies(flats_df, "security", unique_security)
 flats_df["properties"] = flats_df["properties"].str.replace(r'(?<=[a-z\s])(?=[A-Z])', ',', regex=True).fillna("none").str.lower().str.replace(r"^varž.*", "aukcionas", regex=True).str.split(',').apply(lambda x: [item.strip() for item in x])
 unique_properties = sorted(flats_df["properties"].explode().unique())
 get_dummies(flats_df, "properties", unique_properties)
+
+# Remove extreme outliers
+flats_df = flats_df[(flats_df["price_sqm"] <= 9100) & (flats_df["price_sqm"] >= 525)].copy()
+flats_df = flats_df.dropna()
+
+# Normalizing using log
+flats_df["price_sqm_log"] = np.log(flats_df["price_sqm"])
+
+# Contruction/renovation year modification into age
+flats_df["building_age"] = 2023 - flats_df["construction_year"]
+flats_df["building_age_reno"] = 2023 - flats_df["renovation_year"]
+
+# Using latitude and longitude to calculate distance to Vilnius center (54.68935143850194, 25.270763607406778)
+flats_df["latitude"] = pd.to_numeric(flats_df["latitude"], errors="coerce")
+flats_df["longitude"] = pd.to_numeric(flats_df["longitude"], errors="coerce")
+flats_df["lat_long"] = list(zip(flats_df["latitude"], flats_df["longitude"]))
+vilnius_center = (54.68935143850194, 25.270763607406778)
+def calculate_distance_to_center(row):
+    return haversine(row["lat_long"], vilnius_center)
+
+flats_df["distance_to_center"] = flats_df.apply(calculate_distance_to_center, axis=1)
 
 print(flats_df.head(10))
 print(flats_df.dtypes)
