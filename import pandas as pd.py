@@ -108,9 +108,6 @@ def calculate_distance_to_center(row):
 
 flats_df['distance_to_center'] = flats_df.apply(calculate_distance_to_center, axis=1)
 print(flats_df.columns)
-#columns_drop = ['energy_class_D','skystu kuru', 'buto dalis']
-#flats_df.drop(columns=columns_drop)
-
 
 print(flats_df.head(10))
 print(flats_df.dtypes)

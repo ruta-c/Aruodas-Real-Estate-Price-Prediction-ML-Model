@@ -110,10 +110,7 @@ def calculate_distance_to_center(row):
     return haversine(row['lat_long'], vilnius_center)
 
 flats_df['distance_to_center'] = flats_df.apply(calculate_distance_to_center, axis=1)
-columns_drop = ['energy_class_D','skystu kuru', 'buto dalis']
-flats_df = flats_df.drop(columns=columns_drop)
-print(flats_df.columns)
+
 print(flats_df.dtypes)
-print(flats_df.columns)
 
 flats_df.to_csv('C:/Users/rceid/OneDrive - Lietuvos sveikatos mokslu universitetas/Documents/kvailioju programuoju/Aruodas-Real-Estate-Price-Prediction-ML-Model/flats.csv')
