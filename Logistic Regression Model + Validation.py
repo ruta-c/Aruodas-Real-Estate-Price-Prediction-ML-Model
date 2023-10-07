@@ -136,7 +136,7 @@ class RealEstateClassifier:
 
 if __name__ == '__main__':
     train_data_file = 'flats.csv'  # Path to the training data CSV file
-    validation_data_file = 'validation_flats_.csv'  # Path to the validation data CSV file
+    validation_data_file = 'validation_flats.csv'  # Path to the validation data CSV file
 
     classifier = RealEstateClassifier(train_data_file, validation_data_file)
     classifier.train_model()
