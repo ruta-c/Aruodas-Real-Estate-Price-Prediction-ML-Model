@@ -3,10 +3,7 @@ import numpy as np
 from haversine import haversine
 from sqlalchemy import create_engine
 
-engine = create_engine('postgresql://postgres:odievai1@localhost:5432/aruodas')
-sql_query = 'SELECT * FROM flats'
-flats_df = pd.read_sql_query(sql_query, engine)
-engine.dispose()
+flats_df = pd.read_csv('validation_flats.csv')
 
 print(flats_df.head())
 
@@ -110,10 +107,13 @@ def calculate_distance_to_center(row):
     return haversine(row['lat_long'], vilnius_center)
 
 flats_df['distance_to_center'] = flats_df.apply(calculate_distance_to_center, axis=1)
-columns_drop = ['energy_class_D','skystu kuru', 'buto dalis']
-flats_df = flats_df.drop(columns=columns_drop)
 print(flats_df.columns)
-print(flats_df.dtypes)
-print(flats_df.columns)
+#columns_drop = ['energy_class_D','skystu kuru', 'buto dalis']
+#flats_df.drop(columns=columns_drop)
 
-flats_df.to_csv('C:/Users/rceid/OneDrive - Lietuvos sveikatos mokslu universitetas/Documents/kvailioju programuoju/Aruodas-Real-Estate-Price-Prediction-ML-Model/flats.csv')
+
+print(flats_df.head(10))
+print(flats_df.dtypes)
+flats_df.to_csv('C:/Users/rceid/OneDrive - Lietuvos sveikatos mokslu universitetas/Documents/kvailioju programuoju/Aruodas-Real-Estate-Price-Prediction-ML-Model/validation_flats_.csv')
+
+
