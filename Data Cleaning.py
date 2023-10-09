@@ -110,7 +110,17 @@ def calculate_distance_to_center(row):
     return haversine(row['lat_long'], vilnius_center)
 
 flats_df['distance_to_center'] = flats_df.apply(calculate_distance_to_center, axis=1)
+#flats_df = flats_df.dropna()
 
+flats_df["price_cat_exp"] = (flats_df["price_sqm_log"] > 8.096398).astype(int)
+columns_to_drop = [
+    "Namo numeris:", "Buto numeris:", "Unikalus daikto numeris (RC numeris):",
+    "Aktyvus iki", "Papildoma įranga:", "extra_rooms", "heating",
+    "security", "link", "properties", "posted", "edited", "Aktyvus iki"
+]
+flats_df = flats_df.drop(columns=columns_to_drop)
 print(flats_df.dtypes)
+print(flats_df.columns)
+print(flats_df.head())
 
 flats_df.to_csv('C:/Users/rceid/OneDrive - Lietuvos sveikatos mokslu universitetas/Documents/kvailioju programuoju/Aruodas-Real-Estate-Price-Prediction-ML-Model/flats.csv')

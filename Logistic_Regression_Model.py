@@ -10,22 +10,7 @@ class RealEstateClassifier:
     def __init__(self, data_file, threshold=0.446):
         self.data = pd.read_csv(data_file)
         self.threshold = threshold
-        self.columns_to_drop = [
-            'Namo numeris:',
-            'Buto numeris:',
-            'Unikalus daikto numeris (RC numeris):',
-            'Aktyvus iki',
-            'Papildoma įranga:',
-            'Unnamed: 0',
-            'extra_rooms',
-            'heating',
-            'security',
-            'link',
-            'properties',
-            'posted',
-            'edited',
-            'Aktyvus iki'
-        ]
+     
         self.columns_to_use = [
             'area',
             'rooms',
@@ -94,7 +79,7 @@ class RealEstateClassifier:
         self.prepare_data()
 
     def prepare_data(self):
-        self.data = self.data.drop(columns=self.columns_to_drop).dropna()
+        self.data = self.data.dropna()
         self.data['price_cat_exp'] = (self.data['price_sqm_log'] > 8.096398).astype(int)
 
     def train_model(self):
@@ -114,7 +99,7 @@ class RealEstateClassifier:
         self.fpr, self.tpr, _ = roc_curve(y_test, self.y_pred)
         self.roc_auc = roc_auc_score(y_test, self.y_pred)
 
-    def plot_roc_curve(self):
+    #def plot_roc_curve(self):
         plt.figure(figsize=(8, 6))
         plt.plot(self.fpr, self.tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {self.roc_auc:.2f})')
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
