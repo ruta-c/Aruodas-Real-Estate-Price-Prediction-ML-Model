@@ -91,8 +91,7 @@ engine = create_engine('postgresql://postgres:PASSWORD@localhost:0000/name')
 # Load existing data from the database
 existing_data_df = pd.read_sql('SELECT * FROM flats', con=engine)
 
-# Assuming new_data_df is your new DataFrame
-# Concatenate existing and new data, dropping duplicates based on all columns except 'price'
+# Concatenate existing and new data, dropping duplicates based on all columns except 'price' and 'Nuoroda'
 combined_df = pd.concat([existing_data_df, flats_df], ignore_index=True)
 unique_data_df = combined_df.drop_duplicates(subset=combined_df.columns.difference(['Price (EUR)', 'Nuoroda']))
 
