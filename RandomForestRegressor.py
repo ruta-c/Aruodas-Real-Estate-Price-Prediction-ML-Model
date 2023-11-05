@@ -1,6 +1,4 @@
 from sqlalchemy import create_engine
-import dash
-from dash import dcc, html, Output, Input
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
@@ -8,7 +6,7 @@ import plotly.express as px
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # Load your real estate dataset here and preprocess if necessary
-engine = create_engine('postgresql://postgres:odievai1@localhost:5432/aruodas')
+engine = create_engine('postgresql://postgres:PASSWORD@localhost:0000/name')
 sql_query = 'SELECT * FROM cleaned_flats'
 df = pd.read_sql_query(sql_query, engine)
 
