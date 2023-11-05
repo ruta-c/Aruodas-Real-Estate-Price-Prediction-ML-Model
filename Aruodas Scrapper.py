@@ -3,11 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from urllib.parse import urlparse, parse_qs
+from sqlalchemy import create_engine
 import pandas as pd
 
 def get_advert_data(building_type, where):
     base_url = f'https://www.aruodas.lt/{building_type}/{where}/puslapis/{{}}/?FOrder=AddDate'
-    executable_path = r'C:\Program Files (x86)\chromedriver-win64\chromedriver.exe'
+    executable_path = r'C:\Program Files (x86)\chromedriver-win64\chromedriver.exe' #Change accordingly
     driver = webdriver.Chrome(executable_path=executable_path) 
     data_list = []
     
@@ -84,3 +85,22 @@ def get_advert_data(building_type, where):
 
 # Call the function ('butai' for flats, 'namai' for houses, 'vilniuje' for Vilnius city, 'kaune' for Kaunas city)
 flats_df = get_advert_data('butai', 'vilniuje')
+
+engine = create_engine('postgresql://postgres:PASSWORD@localhost:0000/name')
+
+# Load existing data from the database
+existing_data_df = pd.read_sql('SELECT * FROM flats', con=engine)
+
+# Assuming new_data_df is your new DataFrame
+# Concatenate existing and new data, dropping duplicates based on all columns except 'price'
+combined_df = pd.concat([existing_data_df, flats_df], ignore_index=True)
+unique_data_df = combined_df.drop_duplicates(subset=combined_df.columns.difference(['Price (EUR)', 'Nuoroda']))
+
+# Get the number of rows to be inserted
+rows_to_insert = len(unique_data_df)
+
+# Insert unique data into the database
+unique_data_df.to_sql('flats', con=engine, if_exists='replace', index=False)
+
+# Print the number of rows inserted
+print(f"Number of rows: {rows_to_insert}")
