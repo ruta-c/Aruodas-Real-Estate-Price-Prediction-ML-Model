@@ -3,11 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from urllib.parse import urlparse, parse_qs
+from sqlalchemy import create_engine
 import pandas as pd
 
 def get_advert_data(building_type, where):
     base_url = f'https://www.aruodas.lt/{building_type}/{where}/puslapis/{{}}/?FOrder=AddDate'
-    executable_path = r'C:\Program Files (x86)\chromedriver-win64\chromedriver.exe'
+    executable_path = r'PATH'
     driver = webdriver.Chrome(executable_path=executable_path) 
     data_list = []
     
@@ -33,11 +34,8 @@ def get_advert_data(building_type, where):
                 break  
             
             for link in advert_links:
-                # Navigate directly to the advertisement link
                 driver.get(link)
-                
                 data_dict = {}
-                
                 # Find the element with the 'price-eur' class
                 price_element = driver.find_element(By.CLASS_NAME, 'price-eur')
                 price_value = price_element.text
@@ -46,7 +44,7 @@ def get_advert_data(building_type, where):
                 # Find the <a> element containing the coordinates (with explicit wait)
                 try:
                     wait = WebDriverWait(driver, 10)
-                    a_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[data-type='map']')))
+                    a_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-type='map']")))
                     href_value = a_element.get_attribute('href')
                     
                     # Parse the query parameters to extract coordinates
@@ -74,13 +72,24 @@ def get_advert_data(building_type, where):
             page += 1
     
     finally:
-        # Create a DataFrame from the scraped data list
         df = pd.DataFrame(data_list)
-        
-        # Clean up and close the driver
         driver.quit()
-
         return df
 
-# Call the function ('butai' for flats, 'namai' for houses, 'vilniuje' for Vilnius city, 'kaune' for Kaunas city)
 flats_df = get_advert_data('butai', 'vilniuje')
+
+engine = create_engine('postgresql://xxxxxx:yyyyyyy@qqqqqqqqqqq.rds.amazonaws.com:0000/db_name')
+
+# Load existing data from the database
+existing_data_df = pd.read_sql('SELECT * FROM uncleaned_flats', con=engine)
+
+# Concatenate existing and new data, dropping duplicates based on all columns except 'price' and 'Nuoroda'
+combined_df = pd.concat([existing_data_df, flats_df], ignore_index=True)
+unique_data_df = combined_df.drop_duplicates(subset=combined_df.columns.difference(['Price (EUR)', 'Nuoroda']), keep='last')
+rows_to_insert = len(unique_data_df)
+
+# Insert unique data into the database
+unique_data_df.to_sql('uncleaned_flats', con=engine, if_exists='replace', index=False)
+
+# Print the number of rows inserted
+print(f"Number of rows: {rows_to_insert}")
