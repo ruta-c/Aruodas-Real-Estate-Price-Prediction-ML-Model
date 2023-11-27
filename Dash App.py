@@ -1,130 +1,104 @@
-from dash import Dash, dcc, html, Input, Output
-from sklearn.model_selection import train_test_split
-from sklearn import linear_model, tree, neighbors
-from sklearn import metrics, datasets
-import plotly.express as px
+import dash
+from dash import Output, Input, State
 import pandas as pd
+from Layout import layout, num_cols
+import joblib
+import boto3
+from botocore.exceptions import NoCredentialsError
 
-app = Dash(__name__)
+app = dash.Dash(__name__)
+server = app.server
 
-MODELS = {'Logistic Regression': linear_model.LogisticRegression,
-          'Decision Tree': tree.DecisionTreeClassifier,
-          'k-NN': neighbors.KNeighborsClassifier}
 
-app.layout = html.Div([
-    html.H4("Analysis of the ML model's results using ROC and PR curves"),
-    html.P("Select model:"),
-    dcc.Dropdown(
-        id='dropdown',
-        options=[
-            {'label': 'Logistic Regression', 'value': 'Logistic Regression'},
-            {'label': 'Decision Tree', 'value': 'Decision Tree'},
-            {'label': 'k-NN', 'value': 'k-NN'}
-    ],
-    value='Logistic Regression',
-    clearable=False
-    ),
-    dcc.Graph(id="graph"),
-])
+def load_model_from_s3():
+    s3 = boto3.client('s3', aws_access_key_id='key_id', aws_secret_access_key='secret_key)
+    bucket_name = 'price-ml-model'
+    model_key = 'model.joblib'
 
+    try:
+        # Download the model file from S3
+        s3.download_file(bucket_name, model_key, 'model.joblib')
+
+        # Load the model
+        model = joblib.load('model.joblib')
+        return model
+
+    except NoCredentialsError:
+        print('Credentials not available')
+
+model_instance = load_model_from_s3()
+
+app.layout = layout
+
+correct_feature_order = ['area', 'rooms', 'floor', 'floors',
+                          'type_Blokinis', 'type_Kita', 'type_Medinis',
+                          'type_Monolitinis', 'type_Mūrinis', 'mounting_Dalinė apdaila',
+                          'mounting_Kita', 'mounting_Neįrengtas', 'mounting_Įrengtas',
+                          'energy_class_A', 'energy_class_A+', 'energy_class_A++',
+                          'energy_class_B', 'energy_class_Lower than B', 'aeroterminis',
+                          'dujinis', 'elektra', 'geoterminis', 'kietu kuru', 'sildymas_kita',
+                          'saulės energija', 'skystu kuru', 'centrinis_sildymas', 'balkonas',
+                          'drabužinė', 'none', 'palepe', 'pirtis', 'rūsys', 'sandėliukas',
+                          'terasa', 'vieta_automobiliui', 'kameros', 'kodine_spyna', 'sargas',
+                          'sarvuotos_durys', 'signalizacija', 'atskiras įėjimas', 'aukcionas',
+                          'aukštos lubos', 'butas palėpėje', 'butas per kelis aukštus',
+                          'buto dalis', 'internetas', 'kabelinė televizija',
+                          'nauja elektros instaliacija', 'nauja kanalizacija',
+                          'tualetas ir vonia atskirai', 'uždaras kiemas',
+                          'virtuvė sujungta su kambariu', 'building_age', 'building_age_reno',
+                          'distance_to_center']
 
 @app.callback(
-    Output("graph", "figure"), 
-    [Input('dropdown', "value")])
-def train_and_display(model_name):
-    data = pd.read_csv('flats.csv')
-    data = data.dropna()
-    features = [
-            'area',
-            'rooms',
-            'floor',
-            'floors',
-            'looked_by',
-            'saved',
-            'type_Blokinis',
-            'type_Kita',
-            'type_Medinis', 
-            'type_Monolitinis',
-            'type_Mūrinis',
-            'type_nan',
-            'mounting_Dalinė apdaila',
-            'mounting_Kita',
-            'mounting_Neįrengtas',
-            'mounting_Įrengtas',
-            'mounting_nan',
-            'energy_class_A',
-            'energy_class_A+',
-            'energy_class_A++',
-            'energy_class_B',
-            'energy_class_C',
-            'energy_class_F',
-            'energy_class_G',
-            'energy_class_nan',
-            'aeroterminis',
-            'centrinis',       
-            'centrinis kolektorinis',
-            'dujinis',
-            'elektra',
-            'geoterminis',
-            'kietu kuru',
-            'kita',
-            'saulės energija',
-            'balkonas',
-            'drabužinė',
-            'none',
-            'palepe',
-            'pirtis',
-            'rūsys',
-            'sandėliukas',
-            'terasa',
-            'vieta_automobiliui',
-            'kameros',
-            'kodine_spyna',
-            'sargas',
-            'sarvuotos_durys',
-            'signalizacija',
-            'atskiras įėjimas',
-            'aukštos lubos',
-            'butas palėpėje',
-            'butas per kelis aukštus',
-            'internetas',
-            'kabelinė televizija',
-            'nauja elektros instaliacija',
-            'nauja kanalizacija',
-            'renovuotas namas',
-            'tualetas ir vonia atskirai',
-            'uždaras kiemas',
-            'virtuvė sujungta su kambariu',
-            'building_age',
-            'building_age_reno',
-            'distance_to_center'
-        ]
+    Output('predicted-price-output', 'children'),
+    [Input('predict-button', 'n_clicks')],
+    [
+        State('area', 'value'),
+        State('rooms', 'value'),
+        State('floor', 'value'),
+        State('floors', 'value'),
+        State('building_age', 'value'),
+        State('building_age_reno', 'value'),
+        State('distance_to_center', 'value'),
+        *[State(f'checklist-col-{i}', 'value') for i in range(num_cols)]
+    ]
+)
+def update_predicted_price(n_clicks, area, rooms, floor, floors, building_age, building_age_reno, distance_to_center,
+                           *selected_features):
+    # Check if the button was clicked
+    if n_clicks and n_clicks > 0:
+        if None not in [area, rooms, floor, floors, building_age, building_age_reno, distance_to_center]:
+            selected_features_flat = [item for sublist in selected_features for item in sublist]
+            selected_features_set = set(selected_features_flat)
+            selected_features_dict = {feature: 1 if feature in selected_features_set else 0 for feature in
+                                      correct_feature_order}
 
-    X = data[features]  # Features
-    y = data['price_cat_exp']  # Target variable
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42)
+            # Create a dictionary to hold input values and selected categorical features
+            numeric_data = {
+                'area': area,
+                'rooms': rooms,
+                'floor': floor,
+                'floors': floors,
+                'building_age': building_age,
+                'building_age_reno': building_age_reno,
+                'distance_to_center': distance_to_center
+            }
+            # Update the input_data dictionary with selected_features_dict
+            input_data = selected_features_dict.copy()  
+            input_data.update(numeric_data)  
+            input_df = pd.DataFrame([input_data])
+            input_df = input_df[correct_feature_order]
 
-    model = MODELS[model_name]()
-    model.fit(X_train, y_train)
+            # Use the pretrained model to predict the price
+            predicted_price = model_instance.predict_price(input_df)[0]
 
-    y_score = model.predict_proba(X_test)[:, 1] > 0.446
+            return f'Predicted Price: {predicted_price:.2f} €/sqm'
 
-    fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
-    score = metrics.auc(fpr, tpr)
+        else:
+            return "Please fill out all input fields."
+    else:
+        # If the button was not clicked, return an empty string
+        return ''
 
-    fig = px.area(
-        x=fpr, y=tpr,
-        title=f'ROC Curve (AUC={score:.4f})',
-        labels=dict(
-            x='False Positive Rate', 
-            y='True Positive Rate'))
-    fig.add_shape(
-        type='line', line=dict(dash='dash'),
-        x0=0, x1=1, y0=0, y1=1)
-    return fig
-
-
-app.run_server(debug=True)
-
-
+#port = int(os.environ.get("PORT", 8050))
+if __name__ == '__main__':
+    app.run_server(debug=True)
