@@ -11,7 +11,7 @@ server = app.server
 
 
 def load_model_from_s3():
-    s3 = boto3.client('s3', aws_access_key_id='key_id', aws_secret_access_key='secret_key)
+    s3 = boto3.client('s3', aws_access_key_id='key_id', aws_secret_access_key='secret_key')
     bucket_name = 'price-ml-model'
     model_key = 'model.joblib'
 
