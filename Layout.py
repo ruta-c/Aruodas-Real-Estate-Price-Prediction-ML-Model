@@ -73,6 +73,7 @@ categorical_feature_options = [
     {'label': 'No Special Properties', 'value': 'none'}
 ]
 
+#Setting the options
 options_type = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['type_Blokinis', 'type_Medinis', 'type_Monolitinis', 'type_Mūrinis', 'type_Kita']]
 options_mounting = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['mounting_Įrengtas', 'mounting_Dalinė apdaila', 'mounting_Neįrengtas', 'mounting_Kita']]
 options_energy_class = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['energy_class_A++', 'energy_class_A+', 'energy_class_A', 'energy_class_B', 'energy_class_Lower than B']]
@@ -80,6 +81,7 @@ options_heating = [{'label': option['label'], 'value': option['value']} for opti
 options_other = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['balkonas', 'drabužinė', 'none', 'palepe', 'pirtis', 'rūsys', 'sandėliukas', 'terasa', 'vieta_automobiliui', 'kameros', 'kodine_spyna', 'sargas', 'sarvuotos_durys', 'signalizacija', 'atskiras įėjimas', 'aukcionas', 'aukštos lubos', 'butas palėpėje', 'butas per kelis aukštus', 'buto dalis', 'internetas', 'kabelinė televizija', 'nauja elektros instaliacija', 'nauja kanalizacija', 'tualetas ir vonia atskirai', 'uždaras kiemas', 'virtuvė sujungta su kambariu']]
 options_other_sorted = sorted(options_other, key=lambda x: x['label'])
 
+# Selecting styles
 input_style = {'margin-bottom': '10px', 'width': '100%', 'padding': '10px', 'box-sizing': 'border-box',
                'font-family': 'Arial, sans-serif', 'border': '1px solid #ccc', 'font-size': '16px', 'color': '#333333'}
 dropdown_style = {'margin-bottom': '10px', 'font-family': 'Arial, sans-serif', 'color': '#333333', 'width': '100%'}
