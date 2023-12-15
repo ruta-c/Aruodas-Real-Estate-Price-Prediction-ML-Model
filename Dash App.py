@@ -53,21 +53,11 @@ correct_feature_order = [
     'distance_to_center'
 ]
 
+# Checking for Similar flats:
 nn_model = NearestNeighbors(n_neighbors=4)
 nn_model.fit(X_train[correct_feature_order])
 
-def process_dropdown_values(feature, selected_value, input_data):
-    if selected_value:
-        if feature == 'other':
-            for value in selected_value:
-                column_name = f'{value}'
-                input_data[column_name] = 1
-                print(f"Feature: {feature}, Selected Value: {value}, Column Name: {column_name}")
-        else:
-            column_name = f'{selected_value}'
-            input_data[column_name] = 1
-            print(f"Feature: {feature}, Selected Value: {selected_value}, Column Name: {column_name}")
-
+#Creating input df for price prediction
 def create_input_data(area, rooms, floor, floors, building_age, building_age_reno, distance_to_center,
                       dropdown_type, dropdown_mounting, dropdown_energy_class, dropdown_heating, dropdown_other):
     input_data = {
@@ -92,7 +82,8 @@ def create_input_data(area, rooms, floor, floors, building_age, building_age_ren
         process_dropdown_values(feature, selected_value, input_data)
 
     return pd.DataFrame([input_data]).reindex(columns=correct_feature_order, fill_value=0)
-
+                          
+#Creating df for similar flats
 def update_similar_flats_df(indices, input_data, label_mapping):
     similar_flats_df = pd.DataFrame(columns=['Property', 'Value'])
 
@@ -218,7 +209,7 @@ def update_predicted_price(n_clicks, area, rooms, floor, floors, building_age, b
 
                 similar_flats_dfs = [pd.DataFrame(columns=['Property', 'Value']) for _ in range(3)]
 
-                for i, idx in enumerate(indices[0][1:4]):  # Consider only the first three similar flats
+                for i, idx in enumerate(indices[0][1:4]):
                     similar_flats_dfs[i].loc[len(similar_flats_dfs[i])] = {
                         'Property': f"Price, €/sqm",
                         'Value': f"{y_train.iloc[idx]:.2f}"
