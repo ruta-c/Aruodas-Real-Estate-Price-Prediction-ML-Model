@@ -10,80 +10,84 @@ def load_model_from_s3():
     model_key = 'model.joblib'
 
     try:
-        # Download the model file from S3
         s3.download_file(bucket_name, model_key, 'model.joblib')
-
-        # Load the model
         model = joblib.load('model.joblib')
         return model
 
     except NoCredentialsError:
         print('Credentials not available')
 
-
 model_instance = load_model_from_s3()
 
 categorical_feature_options = [
-    {'label': 'Concrete Block', 'value':'type_Blokinis'},
+    {'label': 'Concrete Block Construction', 'value': 'type_Blokinis'},
     {'label': 'Energy Class A++', 'value': 'energy_class_A++'},
+    {'label': 'Energy Class A', 'value': 'energy_class_A'},
     {'label': 'Aerothermal Heating', 'value': 'aeroterminis'},
-    {'label': 'Wooden', 'value': 'type_Medinis'},
+    {'label': 'Wooden Construction', 'value': 'type_Medinis'},
     {'label': 'Energy Class A+', 'value': 'energy_class_A+'},
     {'label': 'Gas Heating', 'value': 'dujinis'},
-    {'label': 'Monolithic', 'value': 'type_Monolitinis'},
+    {'label': 'Monolithic Construction', 'value': 'type_Monolitinis'},
     {'label': 'Energy Class B', 'value': 'energy_class_B'},
     {'label': 'Electric Heating', 'value': 'elektra'},
-    {'label': 'Bricks', 'value': 'type_Mūrinis'},
+    {'label': 'Brick Construction', 'value': 'type_Mūrinis'},
     {'label': 'Energy Class Lower Than B', 'value': 'energy_class_Lower than B'},
     {'label': 'Geothermal Heating', 'value': 'geoterminis'},
-    {'label': 'Other type of material', 'value':'type_Kita'},
-    {'label': 'Energy Class Not specified', 'value': 'energy_class_Not specified'},
+    {'label': 'Other Construction', 'value': 'type_Kita'},
+    {'label': 'Energy Class Not Specified', 'value': 'energy_class_Not specified'},
     {'label': 'Solid Fuel Heating', 'value': 'kietu kuru'},
-    {'label': 'Fully mounted', 'value': 'mounting_Įrengtas'},
+    {'label': 'Fully Furnished', 'value': 'mounting_Įrengtas'},
     {'label': 'Balcony', 'value': 'balkonas'},
     {'label': 'Central Heating', 'value': 'centrinis_sildymas'},
-    {'label': 'Partly Mounted', 'value': 'mounting_Dalinė apdaila'},
+    {'label': 'Partly Furnished', 'value': 'mounting_Dalinė apdaila'},
     {'label': 'Closet', 'value': 'drabužinė'},
     {'label': 'Solar Power Heating', 'value': 'saulės energija'},
-    {'label': 'Not Mounted', 'value': 'mounting_Neįrengtas'},
+    {'label': 'Not Furnished', 'value': 'mounting_Neįrengtas'},
     {'label': 'Attic', 'value': 'palepe'},
     {'label': 'Liquid Fuel Heating', 'value': 'skystu kuru'},
-    {'label': 'Mounted: Other', 'value': 'mounting_Kita'},
+    {'label': 'Other Furnishing', 'value': 'mounting_Kita'},
     {'label': 'Sauna', 'value': 'pirtis'},
     {'label': 'Other Heating', 'value': 'sildymas_kita'},
     {'label': 'Basement', 'value': 'rūsys'},
     {'label': 'Pantry', 'value': 'sandėliukas'},
     {'label': 'Terrace', 'value': 'terasa'},
-    {'label': 'Parking Spot', 'value': 'vieta_automobiliui'},
-    {'label': 'Cameras', 'value': 'kameros'},
+    {'label': 'Parking Space', 'value': 'vieta_automobiliui'},
+    {'label': 'Security Cameras', 'value': 'kameros'},
     {'label': 'Combination Lock Door', 'value': 'kodine_spyna'},
     {'label': 'Guard', 'value': 'sargas'},
-    {'label': 'Steel Door', 'value': 'sarvuotos_durys'},
-    {'label': 'Alarm', 'value': 'signalizacija'},
+    {'label': 'Steel Doors', 'value': 'sarvuotos_durys'},
+    {'label': 'Alarm System', 'value': 'signalizacija'},
     {'label': 'Separate Entrance', 'value': 'atskiras įėjimas'},
     {'label': 'Auction', 'value': 'aukcionas'},
-    {'label': 'High Ceiling', 'value': 'aukštos lubos'},
-    {'label': 'Flat in the Attic', 'value': 'butas palėpėje'},
-    {'label': 'Flat over Several Floors', 'value': 'butas per kelis aukštus'},
-    {'label': 'Part of the Flat', 'value': 'buto dalis'},
+    {'label': 'High Ceilings', 'value': 'aukštos lubos'},
+    {'label': 'Attic Apartment', 'value': 'butas palėpėje'},
+    {'label': 'Multi-Floor Apartment', 'value': 'butas per kelis aukštus'},
+    {'label': 'Part of the Apartment', 'value': 'buto dalis'},
     {'label': 'Internet', 'value': 'internetas'},
     {'label': 'Cable TV', 'value': 'kabelinė televizija'},
     {'label': 'New Electrical Installation', 'value': 'nauja elektros instaliacija'},
     {'label': 'New Plumbing', 'value': 'nauja kanalizacija'},
-    {'label': 'Toilet and Bathroom Separated', 'value': 'tualetas ir vonia atskirai'},
+    {'label': 'Separate Toilet and Bathroom', 'value': 'tualetas ir vonia atskirai'},
     {'label': 'Closed Yard', 'value': 'uždaras kiemas'},
     {'label': 'Kitchen Connected with Room', 'value': 'virtuvė sujungta su kambariu'},
     {'label': 'No Special Properties', 'value': 'none'}
 ]
 
-num_cols = 3  # Number of columns to divide the categorical features into
-categorical_feature_options_split = [
-    categorical_feature_options[i::num_cols] for i in range(num_cols)]
+options_type = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['type_Blokinis', 'type_Medinis', 'type_Monolitinis', 'type_Mūrinis', 'type_Kita']]
+options_mounting = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['mounting_Įrengtas', 'mounting_Dalinė apdaila', 'mounting_Neįrengtas', 'mounting_Kita']]
+options_energy_class = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['energy_class_A++', 'energy_class_A+', 'energy_class_A', 'energy_class_B', 'energy_class_Lower than B']]
+options_heating = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['aeroterminis',  'centrinis_sildymas', 'dujinis', 'elektra', 'geoterminis', 'kietu kuru', 'saulės energija', 'skystu kuru', 'sildymas_kita',]]
+options_other = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['balkonas', 'drabužinė', 'none', 'palepe', 'pirtis', 'rūsys', 'sandėliukas', 'terasa', 'vieta_automobiliui', 'kameros', 'kodine_spyna', 'sargas', 'sarvuotos_durys', 'signalizacija', 'atskiras įėjimas', 'aukcionas', 'aukštos lubos', 'butas palėpėje', 'butas per kelis aukštus', 'buto dalis', 'internetas', 'kabelinė televizija', 'nauja elektros instaliacija', 'nauja kanalizacija', 'tualetas ir vonia atskirai', 'uždaras kiemas', 'virtuvė sujungta su kambariu']]
+options_other_sorted = sorted(options_other, key=lambda x: x['label'])
 
-layout = html.Div([
-    html.H1('Real Estate Price Prediction (Flats)', style={'font-family': 'Arial, sans-serif'}),
-    # First row
-    html.Div([
+input_style = {'margin-bottom': '10px', 'width': '100%', 'padding': '10px', 'box-sizing': 'border-box',
+               'font-family': 'Arial, sans-serif', 'border': '1px solid #ccc', 'font-size': '16px', 'color': '#333333'}
+dropdown_style = {'margin-bottom': '10px', 'font-family': 'Arial, sans-serif', 'color': '#333333', 'width': '100%'}
+button_style = {'margin-top': '20px', 'width': '95%', 'height': '40px', 'font-family': 'Arial, sans-serif',
+                'border': '1px solid #ccc', 'font-size': '16px', 'background-color': '#ffffff', 'color': '#333333'}
+
+tab1_content = html.Div([
+html.Div([
         # First column
         html.Div([
             html.H2('Model Performance: Actual vs. Predicted Values',
@@ -110,31 +114,166 @@ layout = html.Div([
             html.H2('Training data renewed:', style={'font-family': 'Arial, sans-serif'}),
             html.Tr('2023-10-19', style={'font-family': 'Arial, sans-serif'})
         ], style={'display': 'inline-block', 'width': '40%', 'vertical-align': 'top'})
-    ]),
-    # Second row
+    ])
+])
+
+tab2_content = html.Div([
     html.Div([
+        html.H2('Feature Selection and Price Prediction', style={
+            'margin-bottom': '10px',
+            'padding': '10px',
+            'box-sizing': 'border-box',
+            'font-family': 'Arial, sans-serif'}),
+
         html.Div([
-            html.H2('Feature Selection and Price Prediction', style={'font-family': 'Arial, sans-serif'}),
-            dcc.Input(id='area', type='number', placeholder='Area', style={'margin-bottom': '10px'}),
-            dcc.Input(id='rooms', type='number', placeholder='Rooms', style={'margin-bottom': '10px'}),
-            dcc.Input(id='floor', type='number', placeholder='Floor', style={'margin-bottom': '10px'}),
-            dcc.Input(id='floors', type='number', placeholder='Total floors', style={'margin-bottom': '10px'}),
-            dcc.Input(id='building_age', type='number', placeholder='Building age',
-                      style={'margin-bottom': '10px'}),
-            dcc.Input(id='building_age_reno', type='number', placeholder='Building age (renovated)',
-                      style={'margin-bottom': '10px'}),
-            dcc.Input(id='distance_to_center', type='number', placeholder='Distance to center',
-                      style={'margin-bottom': '10px'}),
-            # Categorical features
-            html.H4('Select Categorical Features', style={'margin-top': '20px', 'font-family': 'Arial, sans-serif'}),
             html.Div([
-                dcc.Checklist(id=f'checklist-col-{i}', options=options, value=[], style={'margin-bottom': '10px', 'font-family': 'Arial, sans-serif'})
-                for i, options in enumerate(categorical_feature_options_split)
-            ], style={'columnCount': num_cols}),
-            html.Button('Predict Price', id='predict-button', n_clicks=0, style={'margin-top': '20px', 'font-family': 'Arial, sans-serif'}),
-            # Displaying prediction
-            html.Div(id='predicted-price-output',
-                     style={'margin-top': '20px', 'font-size': '18px', 'font-family': 'Arial, sans-serif'})
-        ], style={'width': '55%'})
-    ], style={'width': '100%', 'margin-top': '20px', 'display': 'inline-block'}),
+                html.Label('Area, sqm', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='area', type='number', placeholder='29', value=29, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%'}),
+
+            html.Div([
+                html.Label('Number of Rooms', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='rooms', type='number', placeholder='1', value=1, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block'}),
+        ]),
+
+        html.Div([
+            html.Div([
+                html.Label('Floor', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='floor', type='number', placeholder='2', value=2, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%'}),
+
+            html.Div([
+                html.Label('Bumber of Floors', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='floors', type='number', placeholder='5', value=5, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block'}),
+        ]),
+
+        html.Div([
+            html.Div([
+                html.Label('Building Age, years', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='building_age', type='number', placeholder='38', value=38, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%'}),
+
+            html.Div([
+                html.Label('Renovated Building Age, years (the same as Building age if not renovated)',
+                           style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='building_age_reno', type='number', placeholder='12', value=12, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block'}),
+        ]),
+
+        html.Div([
+            html.Div([
+                html.Label('Distance to Center, km', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Input(id='distance_to_center', type='number', placeholder='2.6', value=2.6, style=input_style),
+            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%', 'vertical-align': 'top'}),
+
+            html.Div([
+                html.Label('Type of Building', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                dcc.Dropdown(id='dropdown-type', options=options_type, multi=False, value='type_Blokinis',
+                             style=dropdown_style),
+            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%', 'vertical-align': 'top'}),
+        ]),
+
+        html.Div([
+            html.Label('Mounting', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+            dcc.Dropdown(id='dropdown-mounting', options=options_mounting, multi=False,
+                         value='mounting_Įrengtas', style=dropdown_style),
+        ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%', 'vertical-align': 'top'}),
+
+        html.Div([
+            html.Label('Energy Class', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+            dcc.Dropdown(id='dropdown-energy-class', options=options_energy_class, multi=False,
+                         value='energy_class_A', style=dropdown_style),
+        ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%', 'vertical-align': 'top'}),
+
+        html.Div([
+            html.Label('Heating Type', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+            dcc.Dropdown(id='dropdown-heating', options=options_heating, multi=False,
+                         value='centrinis_sildymas', style=dropdown_style),
+        ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%', 'vertical-align': 'top'}),
+
+        html.Div([
+            html.Label('Other properties', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+            dcc.Dropdown(id='dropdown-other', options=options_other_sorted, multi=True, value=['none'],
+                         style=dropdown_style),
+        ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
+
+        html.Button('Predict Price', id='predict-button', n_clicks=0, style=button_style),
+    ], style={'width': '45%', 'display': 'inline-block'}),
+
+    html.Div([
+        html.H2('Price prediction and similar flats', style={
+            'margin-bottom': '10px',
+            'padding': '10px',
+            'box-sizing': 'border-box',
+            'font-family': 'Arial, sans-serif'}),
+        html.Div(id='predicted-price-output',
+                 style={'margin-bottom': '20px', 'font-size': '18px', 'font-family': 'Arial, sans-serif'}),
+
+        dcc.Tabs([
+            dcc.Tab(
+                label='Similar Flat No. 1',
+                style={'font-family': 'Arial, sans-serif'},
+                selected_style={'font-family': 'Arial, sans-serif', 'border': '1px solid #d6d6d6'},
+                children=[
+                    dash_table.DataTable(
+                        id='similar-flats-table-1',
+                        columns=[
+                            {'name': 'Property', 'id': 'Property'},
+                            {'name': 'Value', 'id': 'Value'},
+                        ],
+                        style_table={'width': '100%', 'font-family': 'Arial, sans-serif'},
+                        style_cell={'textAlign': 'left', 'font-family': 'Arial, sans-serif'},
+                        style_data={'whiteSpace': 'normal', 'font-family': 'Arial, sans-serif'},
+                    ),
+                ]
+            ),
+            dcc.Tab(
+                label='Similar Flat No. 2',
+                style={'font-family': 'Arial, sans-serif'},
+                selected_style={'font-family': 'Arial, sans-serif', 'border': '1px solid #d6d6d6'},
+                children=[
+                    dash_table.DataTable(
+                        id='similar-flats-table-2',
+                        columns=[
+                            {'name': 'Property', 'id': 'Property'},
+                            {'name': 'Value', 'id': 'Value'},
+                        ],
+                        style_table={'width': '100%', 'font-family': 'Arial, sans-serif'},
+                        style_cell={'textAlign': 'left', 'font-family': 'Arial, sans-serif'},
+                        style_data={'whiteSpace': 'normal', 'font-family': 'Arial, sans-serif'},
+                    ),
+                ]
+            ),
+            dcc.Tab(
+                label='Similar Flat No. 3',
+                style={'font-family': 'Arial, sans-serif'},
+                selected_style={'font-family': 'Arial, sans-serif', 'border': '1px solid #d6d6d6'},
+                children=[
+                    dash_table.DataTable(
+                        id='similar-flats-table-3',
+                        columns=[
+                            {'name': 'Property', 'id': 'Property'},
+                            {'name': 'Value', 'id': 'Value'},
+                        ],
+                        style_table={'width': '100%', 'font-family': 'Arial, sans-serif'},
+                        style_cell={'textAlign': 'left', 'font-family': 'Arial, sans-serif'},
+                        style_data={'whiteSpace': 'normal', 'font-family': 'Arial, sans-serif'},
+                    ),
+                ]
+            ),
+        ]),
+    ], style={'width': '50%', 'display': 'inline-block'}),
+], style={'display': 'flex', 'flexWrap': 'wrap'})
+
+layout = html.Div([
+    html.H1('Real Estate Price Prediction (Flats)', style={'font-family': 'Arial, sans-serif'}),
+
+    dcc.Tabs([
+        dcc.Tab(label='Model Performance', children=[tab1_content], id='tab1'),
+        dcc.Tab(label='Feature Selection & Prediction', children=[tab2_content], id='tab2'),
+    ], id='tabs', value='tab1', style={'font-family': 'Arial, sans-serif'}),
+
+    html.Div(id='tabs-content')
 ])
