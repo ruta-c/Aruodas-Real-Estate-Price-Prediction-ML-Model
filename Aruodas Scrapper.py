@@ -46,8 +46,6 @@ def get_advert_data(building_type, where):
                     wait = WebDriverWait(driver, 10)
                     a_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[data-type='map']")))
                     href_value = a_element.get_attribute('href')
-                    
-                    # Parse the query parameters to extract coordinates
                     query_params = parse_qs(urlparse(href_value).query)
                     coordinates = query_params.get('query', [''])[0].split(',')
                     latitude = coordinates[0]
