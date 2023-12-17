@@ -15,10 +15,7 @@ def load_model_from_s3(model_key):
     bucket_name = 'price-ml-model'
   
     try:
-        # Download the model file from S3
         s3.download_file(bucket_name, model_key, model_key)
-
-        # Load the model
         model = joblib.load(model_key)
         return model
 
