@@ -116,16 +116,9 @@ modified_flats_df = modified_flats_df.drop(columns=columns_to_drop)
 modified_flats_df.dropna(subset=['distance_to_center'], inplace=True)
 existing_data_df = pd.read_sql('SELECT * FROM cleaned_flats', con=engine)
 
-# Assuming new_data_df is your new DataFrame
 # Concatenate existing and new data, dropping duplicates based on all columns except 'price'
 combined_df = pd.concat([existing_data_df, modified_flats_df], ignore_index=True)
-
-# Keep the last occurrence (newer row) when there are duplicates
 unique_data_df = combined_df.drop_duplicates(subset=combined_df.columns.difference(['price']), keep='last')
 rows_to_insert = len(unique_data_df)
-
-# Insert unique data into the database
 unique_data_df.to_sql('uncleaned_flats', con=engine, if_exists='replace', index=False)
-
-# Print the number of rows inserted
 print(f"Number of rows: {rows_to_insert}")
