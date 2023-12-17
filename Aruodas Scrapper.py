@@ -8,8 +8,7 @@ import pandas as pd
 
 def get_advert_data(building_type, where):
     base_url = f'https://www.aruodas.lt/{building_type}/{where}/puslapis/{{}}/?FOrder=AddDate'
-    executable_path = r'PATH'
-    driver = webdriver.Chrome(executable_path=executable_path) 
+    driver = webdriver.Chrome() 
     data_list = []
     
     try:
