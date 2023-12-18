@@ -1,7 +1,8 @@
 # Aruodas-Real-Estate-Price-Prediction-ML-Model
 This project entails the extraction of data from real estate advertisements on the web page aruodas.lt, followed by data preparation and the development of a machine learning model for price prediction. The primary objective of this endeavor is exclusively educational, aimed at fostering a deeper understanding of data extraction, preparation, and predictive modeling within the context of real estate pricing.
 
-The model performance and practical implementation can be found here: https://price-predictor-2.onrender.com
+The model performance and practical implementation can be found here: https://price-predictor-hdcz.onrender.com
+
 ![Aruodas (1)](https://github.com/ruta-c/Aruodas-Real-Estate-Price-Prediction-ML-Model/assets/130843221/4f558225-ee3c-4bb9-ba9b-8b09c4dc3815)
 
 # Project Structure
