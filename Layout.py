@@ -154,20 +154,20 @@ tab2_content = html.Div([
         html.Div([
             html.Div([
                 html.Label('Building Age, years', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
-                dcc.Input(id='building_age', type='number', placeholder='38', value=38, style=input_style),
+                dcc.Input(id='building_age', type='number', placeholder='38', value=39, style=input_style),
             ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%'}),
 
             html.Div([
                 html.Label('Renovated Building Age, years (the same as Building age if not renovated)',
                            style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
-                dcc.Input(id='building_age_reno', type='number', placeholder='12', value=12, style=input_style),
+                dcc.Input(id='building_age_reno', type='number', placeholder='8', value=12, style=input_style),
             ], style={'width': '45%', 'display': 'inline-block'}),
         ]),
 
         html.Div([
             html.Div([
                 html.Label('Distance to Center, km', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
-                dcc.Input(id='distance_to_center', type='number', placeholder='2.6', value=2.6, style=input_style),
+                dcc.Input(id='distance_to_center', type='number', placeholder='2.3', value=2.6, style=input_style),
             ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%', 'vertical-align': 'top'}),
 
             html.Div([
