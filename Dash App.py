@@ -208,7 +208,7 @@ def update_predicted_price(n_clicks, area, rooms, floor, floors, building_age, b
 
                 for i, idx in enumerate(indices[0][1:4]):
                     similar_flats_dfs[i].loc[len(similar_flats_dfs[i])] = {
-                        'Property': f"Price, €/sqm",
+                        'Property': f"Price (€/sqm)",
                         'Value': f"{y_train.iloc[idx]:.2f}"
                     }
 
