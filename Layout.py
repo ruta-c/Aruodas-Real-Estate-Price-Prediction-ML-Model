@@ -1,23 +1,8 @@
 from dash import html
-from dash import dcc
+from dash import dcc, dash_table
 import joblib
-import boto3
-from botocore.exceptions import NoCredentialsError
 
-def load_model_from_s3():
-    s3 = boto3.client('s3', aws_access_key_id='key_id', aws_secret_access_key='secret_key')
-    bucket_name = 'price-ml-model'
-    model_key = 'model.joblib'
-
-    try:
-        s3.download_file(bucket_name, model_key, 'model.joblib')
-        model = joblib.load('model.joblib')
-        return model
-
-    except NoCredentialsError:
-        print('Credentials not available')
-
-model_instance = load_model_from_s3()
+model_instance = joblib.load('model13.joblib')
 
 categorical_feature_options = [
     {'label': 'Concrete Block Construction', 'value': 'type_Blokinis'},
@@ -73,7 +58,6 @@ categorical_feature_options = [
     {'label': 'No Special Properties', 'value': 'none'}
 ]
 
-#Setting the options
 options_type = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['type_Blokinis', 'type_Medinis', 'type_Monolitinis', 'type_Mūrinis', 'type_Kita']]
 options_mounting = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['mounting_Įrengtas', 'mounting_Dalinė apdaila', 'mounting_Neįrengtas', 'mounting_Kita']]
 options_energy_class = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['energy_class_A++', 'energy_class_A+', 'energy_class_A', 'energy_class_B', 'energy_class_Lower than B']]
@@ -81,7 +65,6 @@ options_heating = [{'label': option['label'], 'value': option['value']} for opti
 options_other = [{'label': option['label'], 'value': option['value']} for option in categorical_feature_options if option['value'] in ['balkonas', 'drabužinė', 'none', 'palepe', 'pirtis', 'rūsys', 'sandėliukas', 'terasa', 'vieta_automobiliui', 'kameros', 'kodine_spyna', 'sargas', 'sarvuotos_durys', 'signalizacija', 'atskiras įėjimas', 'aukcionas', 'aukštos lubos', 'butas palėpėje', 'butas per kelis aukštus', 'buto dalis', 'internetas', 'kabelinė televizija', 'nauja elektros instaliacija', 'nauja kanalizacija', 'tualetas ir vonia atskirai', 'uždaras kiemas', 'virtuvė sujungta su kambariu']]
 options_other_sorted = sorted(options_other, key=lambda x: x['label'])
 
-# Selecting styles
 input_style = {'margin-bottom': '10px', 'width': '100%', 'padding': '10px', 'box-sizing': 'border-box',
                'font-family': 'Arial, sans-serif', 'border': '1px solid #ccc', 'font-size': '16px', 'color': '#333333'}
 dropdown_style = {'margin-bottom': '10px', 'font-family': 'Arial, sans-serif', 'color': '#333333', 'width': '100%'}
@@ -95,7 +78,7 @@ html.Div([
             html.H2('Model Performance: Actual vs. Predicted Values',
                     style={'margin-bottom': '10px', 'font-family': 'Arial, sans-serif'}),
             dcc.Graph(id='scatter-plot', figure=model_instance.get_scatter_plot(), style={'margin-top': '10px'})
-        ], style={'display': 'inline-block', 'width': '55%', 'vertical-align': 'top'}),
+        ], style={'display': 'inline-block', 'width': '50%', 'vertical-align': 'top'}),
         # Second column
         html.Div([
             html.H2('About', style={'font-family': 'Arial, sans-serif'}),
@@ -114,8 +97,8 @@ html.Div([
             ], style={'width': '100%', 'margin-top': '5px', 'font-family': 'Arial, sans-serif'}),
 
             html.H2('Training data renewed:', style={'font-family': 'Arial, sans-serif'}),
-            html.Tr('2023-10-19', style={'font-family': 'Arial, sans-serif'})
-        ], style={'display': 'inline-block', 'width': '40%', 'vertical-align': 'top'})
+            html.Tr('2023-12-17', style={'font-family': 'Arial, sans-serif'})
+        ], style={'display': 'inline-block', 'width': '50%', 'vertical-align': 'top'})
     ])
 ])
 
@@ -202,9 +185,9 @@ tab2_content = html.Div([
         ], style={'width': '45%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
         html.Button('Predict Price', id='predict-button', n_clicks=0, style=button_style),
-    ], style={'width': '45%', 'display': 'inline-block'}),
+    ], style={'width': '50%', 'float': 'left'}),
 
-    html.Div([
+    html.Div(id='price-prediction-section', children=[
         html.H2('Price prediction and similar flats', style={
             'margin-bottom': '10px',
             'padding': '10px',
@@ -266,16 +249,16 @@ tab2_content = html.Div([
                 ]
             ),
         ]),
-    ], style={'width': '50%', 'display': 'inline-block'}),
-], style={'display': 'flex', 'flexWrap': 'wrap'})
+    ], style={'width': '50%', 'float': 'right'}),
+], style={'overflow': 'hidden'})
 
 layout = html.Div([
     html.H1('Real Estate Price Prediction (Flats)', style={'font-family': 'Arial, sans-serif'}),
 
-    dcc.Tabs([
+    dcc.Tabs(id='tabs', value='tab1', style={'font-family': 'Arial, sans-serif'}, children=[
         dcc.Tab(label='Model Performance', children=[tab1_content], id='tab1'),
         dcc.Tab(label='Feature Selection & Prediction', children=[tab2_content], id='tab2'),
-    ], id='tabs', value='tab1', style={'font-family': 'Arial, sans-serif'}),
+    ]),
 
     html.Div(id='tabs-content')
 ])
