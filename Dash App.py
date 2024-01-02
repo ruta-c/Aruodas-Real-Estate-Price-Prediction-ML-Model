@@ -1,12 +1,13 @@
 import dash
-from dash import Output, Input, State
+from dash import Output, Input, State, html
 import pandas as pd
-from Layout import layout, num_cols
 import joblib
 import boto3
 from botocore.exceptions import NoCredentialsError
+from sklearn.neighbors import NearestNeighbors
+from Layout import layout, tab1_content, tab2_content
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, suppress_callback_exceptions=True)
 server = app.server
 
 
@@ -50,11 +51,21 @@ correct_feature_order = [
     'distance_to_center'
 ]
 
-# Checking for Similar flats:
 nn_model = NearestNeighbors(n_neighbors=4)
 nn_model.fit(X_train[correct_feature_order])
 
-#Creating input df for price prediction
+def process_dropdown_values(feature, selected_value, input_data):
+    if selected_value:
+        if feature == 'other':
+            for value in selected_value:
+                column_name = f'{value}'
+                input_data[column_name] = 1
+                print(f"Feature: {feature}, Selected Value: {value}, Column Name: {column_name}")
+        else:
+            column_name = f'{selected_value}'
+            input_data[column_name] = 1
+            print(f"Feature: {feature}, Selected Value: {selected_value}, Column Name: {column_name}")
+
 def create_input_data(area, rooms, floor, floors, building_age, building_age_reno, distance_to_center,
                       dropdown_type, dropdown_mounting, dropdown_energy_class, dropdown_heating, dropdown_other):
     input_data = {
@@ -79,8 +90,7 @@ def create_input_data(area, rooms, floor, floors, building_age, building_age_ren
         process_dropdown_values(feature, selected_value, input_data)
 
     return pd.DataFrame([input_data]).reindex(columns=correct_feature_order, fill_value=0)
-                          
-#Creating df for similar flats
+
 def update_similar_flats_df(indices, input_data, label_mapping):
     similar_flats_df = pd.DataFrame(columns=['Property', 'Value'])
 
@@ -108,6 +118,28 @@ def update_similar_flats_df(indices, input_data, label_mapping):
     return similar_flats_df
 
 @app.callback(
+    Output('tabs-content', 'children'),
+    [Input('tabs', 'value')]
+)
+def update_tab_content(selected_tab):
+    if selected_tab is None:
+        selected_tab = 'tab1'
+    if selected_tab == 'tab1':
+        return tab1_content
+    elif selected_tab == 'tab2':
+        return tab2_content
+
+@app.callback(
+    Output('price-prediction-section', 'style'),
+    [Input('predict-button', 'n_clicks')]
+)
+def toggle_price_prediction_section(n_clicks):
+    if n_clicks and n_clicks > 0:
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
+
+@app.callback(
     [
         Output('predicted-price-output', 'children'),
         Output('similar-flats-table-1', 'data'),
@@ -130,9 +162,9 @@ def update_similar_flats_df(indices, input_data, label_mapping):
         State('dropdown-other', 'value'),
     ]
 )
-
 def update_predicted_price(n_clicks, area, rooms, floor, floors, building_age, building_age_reno, distance_to_center,
                            dropdown_type, dropdown_mounting, dropdown_energy_class, dropdown_heating, dropdown_other):
+
     if n_clicks and n_clicks > 0:
         if all(v is not None and v >= 0 for v in [area, rooms, floor, floors, building_age, building_age_reno, distance_to_center]):
             if floor <= floors and building_age >= building_age_reno:
@@ -206,7 +238,7 @@ def update_predicted_price(n_clicks, area, rooms, floor, floors, building_age, b
 
                 similar_flats_dfs = [pd.DataFrame(columns=['Property', 'Value']) for _ in range(3)]
 
-                for i, idx in enumerate(indices[0][1:4]):
+                for i, idx in enumerate(indices[0][1:4]):  # Consider only the first three similar flats
                     similar_flats_dfs[i].loc[len(similar_flats_dfs[i])] = {
                         'Property': f"Price (€/sqm)",
                         'Value': f"{y_train.iloc[idx]:.2f}"
