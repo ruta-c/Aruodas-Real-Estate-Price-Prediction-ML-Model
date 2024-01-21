@@ -144,7 +144,7 @@ tab2_content = html.Div([
             ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '5%'}),
 
             html.Div([
-                html.Label('Bumber of Floors', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
+                html.Label('Total Number of Floors', style={'font-size': '16px', 'font-family': 'Arial, sans-serif'}),
                 dcc.Input(id='floors', type='number', placeholder='5', value=5, style=input_style),
             ], style={'width': '45%', 'display': 'inline-block'}),
         ]),
