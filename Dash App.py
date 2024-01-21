@@ -261,7 +261,7 @@ def update_predicted_price(n_clicks, area, rooms, floor, floors, building_age, b
 
                 return predicted_price_output, similar_flats_dfs[0].to_dict('records'), similar_flats_dfs[1].to_dict('records'), similar_flats_dfs[2].to_dict('records')
             else:
-                return "Please fill out all input fields. Floor should be less than or equal to total floors, and building age should be greater than renovated building age.", [], [], []
+                return "Please fill out all input fields. Floor should be less than or equal to total number of floors, and building age should be greater (or equal) than renovated building age.", [], [], []
         else:
             return "Error: Please fill out all input fields with positive values.", [], [], []
     else:
